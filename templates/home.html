@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+
+<head>
+	<title>Object detection hub</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="static/static.css">
+	<link rel="stylesheet" href="static/assets/css/main.css" />
+
+</head>
+
+<body class="is-preload">
+
+	<!-- Header -->
+	<header id="header">
+		<h2>Object Detection</h2>
+		<p>Detect object with different models and compare it by<br />
+			ONE CLICK.</p>
+	</header>
+
+	<div>
+		<a href="http://127.0.0.1:5050">Sign Detection</a><br>
+		<a href="http://127.0.0.1:5001">Lane Detection</a>
+	</div>
+
+
+	<!-- Scripts -->
+	<script src="static/assets/js/main.js"></script>
+	<script src="static/main.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(function (position) {
+					document.getElementById('latitude').value = position.coords.latitude;
+					document.getElementById('longitude').value = position.coords.longitude;
+				}, function (error) {
+					console.error('Geolocation error: ' + error.message);
+				});
+			} else {
+				console.error('Geolocation is not supported by this browser.');
+			}
+		});
+	</script>
+
+</body>
+
+</html>
