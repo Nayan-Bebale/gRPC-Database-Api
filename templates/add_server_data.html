@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Server Data</title>
+</head>
+<body>
+    <h2>Enter Server Details</h2>
+    <form action="/add-server-data" method="POST">
+        <label>IP Address:</label>
+        <input type="text" name="ip_address" required><br><br>
+
+        <label>CPU Usage:</label>
+        <input type="text" name="cpu_use"><br><br>
+
+        <label>GPU Usage:</label>
+        <input type="text" name="gpu_use"><br><br>
+
+        <label>RAM Usage (MB):</label>
+        <input type="number" name="ram_use"><br><br>
+
+        <label>Service Provider:</label>
+        <input type="text" name="service_provider" required><br><br>
+
+        <label>Machine Type:</label>
+        <input type="text" name="machine_type" required><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

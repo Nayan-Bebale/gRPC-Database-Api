@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, Response, jsonify
+from flask import Flask, render_template,redirect,url_for, request, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from geopy.geocoders import Nominatim
@@ -50,27 +50,37 @@ class ModelResult(db.Model):
     throughput = db.Column(db.Float, nullable=True)  # New column for throughput
     energy_required = db.Column(db.Float, nullable=True)  # New column for energy required
     power_watts = db.Column(db.Float, nullable=True)  # New column for power in watts
+    # messages = db.Column(db.Text, nullable=True)  # Optional column for messages
     timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
 
 
 
 # NEW SERVICE
+# class ServerData(db.Model):
+#     __tablename__ = 'server_data'
+#     public_ip = db.Column(db.String(255), primary_key=True)  # Primary key set as public IP
+#     local_ip = db.Column(db.String(255), nullable=False)
+#     latitude = db.Column(db.Float, nullable=False)
+#     longitude = db.Column(db.Float, nullable=False)
+#     service_provider = db.Column(db.String(255), nullable=False)
+#     city = db.Column(db.String(255), nullable=False)
+#     region = db.Column(db.String(255), nullable=False)
+#     country = db.Column(db.String(255), nullable=False)
+#     geo_location_coordinates = db.Column(db.String(255), nullable=False)
+#     asn = db.Column(db.String(255), nullable=False)
+#     asn_description = db.Column(db.String(255), nullable=False)
+#     subnet = db.Column(db.String(255), nullable=False)
+#     subnet_mask = db.Column(db.String(255), nullable=False)
+#     timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
+
+
 class ServerData(db.Model):
-    __tablename__ = 'server_data'
-    public_ip = db.Column(db.String(255), primary_key=True)  # Primary key set as public IP
-    local_ip = db.Column(db.String(255), nullable=False)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
+    ip_address = db.Column(db.String(255), nullable=False, primary_key=True)
+    cpu_use = db.Column(db.String(55), nullable=True)
+    gpu_use = db.Column(db.String(55), nullable=True)
+    ram_use = db.Column(db.Integer, nullable=True)
     service_provider = db.Column(db.String(255), nullable=False)
-    city = db.Column(db.String(255), nullable=False)
-    region = db.Column(db.String(255), nullable=False)
-    country = db.Column(db.String(255), nullable=False)
-    geo_location_coordinates = db.Column(db.String(255), nullable=False)
-    asn = db.Column(db.String(255), nullable=False)
-    asn_description = db.Column(db.String(255), nullable=False)
-    subnet = db.Column(db.String(255), nullable=False)
-    subnet_mask = db.Column(db.String(255), nullable=False)
-    timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
+    machine_type = db.Column(db.String(255), nullable=False)
 
 
 
@@ -282,55 +292,76 @@ def delete_modelresult(id):
     return jsonify({'error': 'ModelResult not found'}), 404
 
 
-# CRUD Routes for ServerData
-@app.route('/add_serverdata', methods=['POST'])
-def add_serverdata():
-    data = request.json
-    public_ip = data.get('public_ip')
-
-    # Check if server data already exists
-    existing_data = ServerData.query.filter_by(public_ip=public_ip).first()
-    if existing_data:
-        return jsonify({'message': 'ServerData already added'}), 200
-
-    # Add new server data
-    new_server = ServerData(
-        public_ip=data['public_ip'],
-        local_ip=data['local_ip'],
-        latitude=data['latitude'],
-        longitude=data['longitude'],
-        service_provider=data['service_provider'],
-        city=data['city'],
-        region=data['region'],
-        country=data['country'],
-        geo_location_coordinates=data['geo_location_coordinates'],
-        asn=data['asn'],
-        asn_description=data['asn_description'],
-        subnet=data['subnet'],
-        subnet_mask=data['subnet_mask']
-    )
-    db.session.add(new_server)
-    db.session.commit()
-    return jsonify({'message': 'ServerData added successfully'}), 201
+# Route to handle form submission
+@app.route('/add-server-data', methods=['GET','POST'])
+def add_server_data():
+    if request.method == 'POST':
+        new_data = ServerData(
+            ip_address=request.form['ip_address'],
+            cpu_use=request.form.get('cpu_use'),
+            gpu_use=request.form.get('gpu_use'),
+            ram_use=request.form.get('ram_use') or None,
+            service_provider=request.form['service_provider'],
+            machine_type=request.form['machine_type']
+        )
+        db.session.add(new_data)
+        db.session.commit()
+        return redirect(url_for('show_server'))
+    
+    return render_template('add_server_data.html')
 
 
-@app.route('/get_serverdata/<public_ip>', methods=['GET'])
-def get_serverdata(public_ip):
-    server_data = ServerData.query.filter_by(public_ip=public_ip).first()
-    if server_data:
-        return jsonify(model_to_dict(server_data)), 200
-    else:
-        return jsonify({'message': 'ServerData not found'}), 404
+# # CRUD Routes for ServerData
+# @app.route('/add_serverdata', methods=['POST'])
+# def add_serverdata():
+#     data = request.json
+#     public_ip = data.get('public_ip')
+
+#     # Check if server data already exists
+#     existing_data = ServerData.query.filter_by(public_ip=public_ip).first()
+#     if existing_data:
+#         return jsonify({'message': 'ServerData already added'}), 200
+
+
+#     # Ṇeed to change - CPU, GPU, RAM, Servce Provider, Machine type, ip address, server id (auto)
+#     # Add new server data
+#     new_server = ServerData(
+#         public_ip= data['public_ip'],
+#         local_ip=data['local_ip'],
+#         latitude=data['latitude'],
+#         longitude=data['longitude'],
+#         service_provider=data['service_provider'],
+#         city=data['city'],
+#         region=data['region'],
+#         country=data['country'],
+#         geo_location_coordinates=data['geo_location_coordinates'],
+#         asn=data['asn'],
+#         asn_description=data['asn_description'],
+#         subnet=data['subnet'],
+#         subnet_mask=data['subnet_mask']
+#     )
+#     db.session.add(new_server)
+#     db.session.commit()
+#     return jsonify({'message': 'ServerData added successfully'}), 201
+
+
+# @app.route('/get_serverdata/<public_ip>', methods=['GET'])
+# def get_serverdata(public_ip):
+#     server_data = ServerData.query.filter_by(public_ip=public_ip).first()
+#     if server_data:
+#         return jsonify(model_to_dict(server_data)), 200
+#     else:
+#         return jsonify({'message': 'ServerData not found'}), 404
        
 
-@app.route('/serverdata/<public_ip>', methods=['DELETE'])
-def delete_serverdata(public_ip):
-    entry = ServerData.query.get(public_ip)
-    if entry:
-        db.session.delete(entry)
-        db.session.commit()
-        return jsonify({'message': 'ServerData deleted'})
-    return jsonify({'error': 'ServerData not found'}), 404
+# @app.route('/serverdata/<public_ip>', methods=['DELETE'])
+# def delete_serverdata(public_ip):
+#     entry = ServerData.query.get(public_ip)
+#     if entry:
+#         db.session.delete(entry)
+#         db.session.commit()
+#         return jsonify({'message': 'ServerData deleted'})
+#     return jsonify({'error': 'ServerData not found'}), 404
 
 
 

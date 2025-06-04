@@ -20,42 +20,29 @@
                 <thead>
                     <tr>
                         <th>IP Address</th>
-                        <th>Latitude</th>
-                        <th>Longitude</th>
-                        <th>Local IP</th>
+                        <th>cpu_use</th>
+                        <th>gpu_use</th>
+                        <th>ram_use</th>
                         <th>Service Provider</th>
-                        <th>City</th>
-                        <th>Region</th>
-                        <th>Country</th>
-                        <th>Geo Location Coordinates</th>
-                        <th>ASN</th>
-                        <th>ASN Description</th>
-                        <th>Subnet</th>
-                        <th>Subnet Mask</th>
-                        <th>Timestamp</th>
+                        <th>machine_type</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in data %}
                     <tr>
-                        <td>{{item.public_ip}}</td>
-                        <td>{{item.latitude}}</td>
-                        <td>{{item.longitude}}</td>
-                        <td>{{item.local_ip}}</td>
+                        <td>{{item.ip_address}}</td>
+                        <td>{{item.cpu_use}}</td>
+                        <td>{{item.gpu_use}}</td>
+                        <td>{{item.ram_use}}</td>
                         <td>{{item.service_provider}}</td>
-                        <td>{{item.city}}</td>
-                        <td>{{item.region}}</td>
-                        <td>{{item.country}}</td>
-                        <td>{{item.geo_location_coordinates}}</td>
-                        <td>{{item.asn}}</td>
-                        <td>{{item.asn_description}}</td>
-                        <td>{{item.subnet}}</td>
-                        <td>{{item.subnet_mask}}</td>
-                        <td>{{item.timestamp}}</td>
+                        <td>{{item.machine_type}}</td>
+                       
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+
+            <a href="add-server-data">ADD SERVER</a>
         </div>
     </div>
 
