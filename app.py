@@ -192,12 +192,8 @@ def model_to_dict(model):
     return {col.key: getattr(model, col.key) for col in mapper.columns}
 
 
+
 @app.route('/')
-def index():
-    return render_template('home.html')
-
-
-@app.route('/show_data')
 def show_data():
     # Query the database
     data = Userdata.query.all()
@@ -209,7 +205,6 @@ def show_data():
 def show_server():
     # Query the database
     data = ServerData.query.all()
-    print(data)
 
     return render_template('show_server.html', data=data)
 
