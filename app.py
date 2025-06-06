@@ -3,12 +3,17 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from geopy.geocoders import Nominatim
 from sqlalchemy.orm import class_mapper
+from dotenv import load_dotenv
+
+import os
+
+load_dotenv()
 
 import csv
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///central_grpc_database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['UPLOAD_FOLDER'] = '/tmp'  # Temporary folder to store uploaded images
@@ -18,7 +23,7 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
-geolocator = Nominatim(user_agent="gRPcObjectDetectPro_Service_central")
+geolocator = Nominatim(user_agent=os.getenv("Nominatim_USER"))
 
 
 # Define Userdata table
@@ -314,49 +319,6 @@ def add_server_data():
     return render_template('add_server_data.html')
 
 
-# # CRUD Routes for ServerData
-# @app.route('/add_serverdata', methods=['POST'])
-# def add_serverdata():
-#     data = request.json
-#     public_ip = data.get('public_ip')
-
-#     # Check if server data already exists
-#     existing_data = ServerData.query.filter_by(public_ip=public_ip).first()
-#     if existing_data:
-#         return jsonify({'message': 'ServerData already added'}), 200
-
-
-#     # Ṇeed to change - CPU, GPU, RAM, Servce Provider, Machine type, ip address, server id (auto)
-#     # Add new server data
-#     new_server = ServerData(
-#         public_ip= data['public_ip'],
-#         local_ip=data['local_ip'],
-#         latitude=data['latitude'],
-#         longitude=data['longitude'],
-#         service_provider=data['service_provider'],
-#         city=data['city'],
-#         region=data['region'],
-#         country=data['country'],
-#         geo_location_coordinates=data['geo_location_coordinates'],
-#         asn=data['asn'],
-#         asn_description=data['asn_description'],
-#         subnet=data['subnet'],
-#         subnet_mask=data['subnet_mask']
-#     )
-#     db.session.add(new_server)
-#     db.session.commit()
-#     return jsonify({'message': 'ServerData added successfully'}), 201
-
-
-# @app.route('/get_serverdata/<public_ip>', methods=['GET'])
-# def get_serverdata(public_ip):
-#     server_data = ServerData.query.filter_by(public_ip=public_ip).first()
-#     if server_data:
-#         return jsonify(model_to_dict(server_data)), 200
-#     else:
-#         return jsonify({'message': 'ServerData not found'}), 404
-       
-
 @app.route('/serverdata/<int:server_id>', methods=['DELETE'])
 def delete_serverdata(server_id):
     entry = ServerData.query.get(server_id)
@@ -369,4 +331,4 @@ def delete_serverdata(server_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=os.getenv("PORT"))
