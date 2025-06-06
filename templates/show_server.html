@@ -13,33 +13,38 @@
 
     <div class="p-4 m-3 border rounded shadow">
 
-        <h1>IP Address - Users Data</h1>
+        <h1>IP Address - Server Data</h1>
         <div class="table-responsive">
             <table id="example" class="display nowrap table table-hover table-striped table-bordered table-sm"
                 style="width:100%">
                 <thead>
                     <tr>
                         <th>IP Address</th>
-                        <th>cpu_use</th>
-                        <th>gpu_use</th>
-                        <th>ram_use</th>
+                        <th>Cpu</th>
+                        <th>Gpu</th>
+                        <th>Ram</th>
                         <th>Service Provider</th>
-                        <th>machine_type</th>
+                        <th>Machine Type</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for item in data %}
-                    <tr>
+                    <tr id="row-{{item.server_id}}">
                         <td>{{item.ip_address}}</td>
                         <td>{{item.cpu_use}}</td>
                         <td>{{item.gpu_use}}</td>
                         <td>{{item.ram_use}}</td>
                         <td>{{item.service_provider}}</td>
                         <td>{{item.machine_type}}</td>
-                       
+                        <td>
+                            <button onclick="deleteServer({{item.server_id}})">Delete</button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
+
             </table>
 
             <a href="add-server-data">ADD SERVER</a>
@@ -57,7 +62,29 @@
                 scrollX: true
             });
         });
+
+        function deleteServer(server_id) {
+            if (confirm('Are you sure you want to delete this server data?')) {
+                fetch(`/serverdata/${server_id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        document.getElementById(`row-${server_id}`).remove();
+                    } else {
+                        alert(data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
     </script>
+
+    
 </body>
 
 </html>

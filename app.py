@@ -41,6 +41,7 @@ class ModelResult(db.Model):
     __tablename__ = 'model_results'
     id = db.Column(db.Integer, primary_key=True)
     ip_address = db.Column(db.String(255), db.ForeignKey('userdata.ip_address'), nullable=False)
+    server_id = db.Column(db.Integer, db.ForeignKey('server_data.server_id'), nullable=False)  # Foreign key to ServerData
     service_type = db.Column(db.String(100), nullable=False)
     model_name = db.Column(db.String(255), nullable=True)  # New column for the model name
     latency_time = db.Column(db.Float, nullable=False)
@@ -50,7 +51,8 @@ class ModelResult(db.Model):
     throughput = db.Column(db.Float, nullable=True)  # New column for throughput
     energy_required = db.Column(db.Float, nullable=True)  # New column for energy required
     power_watts = db.Column(db.Float, nullable=True)  # New column for power in watts
-    # messages = db.Column(db.Text, nullable=True)  # Optional column for messages
+    messages = db.Column(db.Text, nullable=True)  # Optional column for messages
+    success = db.Column(db.Boolean, default=True)  # New column for success
     timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
 
 
@@ -75,7 +77,8 @@ class ModelResult(db.Model):
 
 
 class ServerData(db.Model):
-    ip_address = db.Column(db.String(255), nullable=False, primary_key=True)
+    server_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    ip_address = db.Column(db.String(255), nullable=False)
     cpu_use = db.Column(db.String(55), nullable=True)
     gpu_use = db.Column(db.String(55), nullable=True)
     ram_use = db.Column(db.Integer, nullable=True)
@@ -354,15 +357,14 @@ def add_server_data():
 #         return jsonify({'message': 'ServerData not found'}), 404
        
 
-# @app.route('/serverdata/<public_ip>', methods=['DELETE'])
-# def delete_serverdata(public_ip):
-#     entry = ServerData.query.get(public_ip)
-#     if entry:
-#         db.session.delete(entry)
-#         db.session.commit()
-#         return jsonify({'message': 'ServerData deleted'})
-#     return jsonify({'error': 'ServerData not found'}), 404
-
+@app.route('/serverdata/<int:server_id>', methods=['DELETE'])
+def delete_serverdata(server_id):
+    entry = ServerData.query.get(server_id)
+    if entry:
+        db.session.delete(entry)
+        db.session.commit()
+        return jsonify({'message': 'ServerData deleted'})
+    return jsonify({'error': 'ServerData not found'}), 404
 
 
 

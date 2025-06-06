@@ -20,6 +20,7 @@
                 <thead>
                     <tr>
                         <th>IP Address</th>
+                        <th>Server ID</th>
                         <th>Latitude</th>
                         <th>Longitude</th>
                         <th>City</th>
@@ -29,12 +30,16 @@
                         <th>ASN Description</th>
                         <th>Subnet</th>
                         <th>Subnet Mask</th>
+                        <th>Message</th>
+                        <th>Status</th>
+
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in data %}
                     <tr>
                         <td>{{item.ip_address}}</td>
+                        <td>{{item.server_id}}</td>
                         <td>{{item.latitude}}</td>
                         <td>{{item.longitude}}</td>
                         <td>{{item.city}}</td>
@@ -44,6 +49,8 @@
                         <td>{{item.asn_description}}</td>
                         <td>{{item.subnet}}</td>
                         <td>{{item.subnet_mask}}</td>
+                        <td>{{item.message}}</td>
+                        <td>{{item.success}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
