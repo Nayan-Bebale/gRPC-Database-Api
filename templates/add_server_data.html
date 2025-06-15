@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Add Server Data</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Object Detection Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/r-3.0.2/datatables.min.css" rel="stylesheet">
-
 </head>
+
 <body>
     <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
@@ -36,59 +35,53 @@
     </nav>
     <!-- Navbar End -->
 
+    <!-- Form Container -->
+    <div class="container my-5">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Enter Server Details</h4>
+            </div>
+            <div class="card-body">
+                <form action="/add-server-data" method="POST">
 
-    <h2>Enter Server Details</h2>
-    <form action="/add-server-data" method="POST">
-        <label>IP Address:</label>
-        <input type="text" name="ip_address" required><br><br>
+                    <div class="mb-3">
+                        <label class="form-label">IP Address</label>
+                        <input type="text" name="ip_address" class="form-control" placeholder="Enter IP Address" required>
+                    </div>
 
-        <label>CPU Usage:</label>
-        <input type="text" name="cpu_use"><br><br>
+                    <div class="mb-3">
+                        <label class="form-label">CPU</label>
+                        <input type="text" name="cpu_use" class="form-control" placeholder="e.g. 45%">
+                    </div>
 
-        <label>GPU Usage:</label>
-        <input type="text" name="gpu_use"><br><br>
+                    <div class="mb-3">
+                        <label class="form-label">GPU</label>
+                        <input type="text" name="gpu_use" class="form-control" placeholder="e.g. 70%">
+                    </div>
 
-        <label>RAM Usage (MB):</label>
-        <input type="number" name="ram_use"><br><br>
+                    <div class="mb-3">
+                        <label class="form-label">RAM (GB)</label>
+                        <input type="number" name="ram_use" class="form-control" placeholder="e.g. 8192">
+                    </div>
 
-        <label>Service Provider:</label>
-        <input type="text" name="service_provider" required><br><br>
+                    <div class="mb-3">
+                        <label class="form-label">Service Provider</label>
+                        <input type="text" name="service_provider" class="form-control" placeholder="Enter Provider Name" required>
+                    </div>
 
-        <label>Machine Type:</label>
-        <input type="text" name="machine_type" required><br><br>
+                    <div class="mb-3">
+                        <label class="form-label">Machine Type</label>
+                        <input type="text" name="machine_type" class="form-control" placeholder="e.g. Dell Server" required>
+                    </div>
 
-        <button type="submit">Submit</button>
-    </form>
+                    <button type="submit" class="btn btn-success w-100">Submit Server Data</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.4/r-3.0.2/datatables.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#example').DataTable({
-                responsive: true,
-                scrollX: true
-            });
-        });
-
-        function deleteServer(server_id) {
-            if (confirm('Are you sure you want to delete this server data?')) {
-                fetch(`/serverdata/${server_id}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message) {
-                        alert(data.message);
-                        document.getElementById(`row-${server_id}`).remove();
-                    } else {
-                        alert(data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            }
-        }
-    </script>
 </body>
+
 </html>

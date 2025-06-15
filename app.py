@@ -46,18 +46,18 @@ class ModelResult(db.Model):
     __tablename__ = 'model_results'
     id = db.Column(db.Integer, primary_key=True)
     ip_address = db.Column(db.String(255), db.ForeignKey('userdata.ip_address'), nullable=False)
-    server_id = db.Column(db.Integer, db.ForeignKey('server_data.server_id'), nullable=False)  # Foreign key to ServerData
     service_type = db.Column(db.String(100), nullable=False)
     model_name = db.Column(db.String(255), nullable=True)  # New column for the model name
+    model_id = db.Column(db.Integer, nullable=True)
     latency_time = db.Column(db.Float, nullable=False)
     cpu_usage = db.Column(db.Float, nullable=True)  # Optionally track CPU usage
+    accuracy = db.Column(db.Float, nullable=True)
     memory_usage = db.Column(db.Float, nullable=True)  # Optionally track memory usage
     response_time = db.Column(db.Float, nullable=True)  # New column for response time
     throughput = db.Column(db.Float, nullable=True)  # New column for throughput
     energy_required = db.Column(db.Float, nullable=True)  # New column for energy required
     power_watts = db.Column(db.Float, nullable=True)  # New column for power in watts
-    messages = db.Column(db.Text, nullable=True)  # Optional column for messages
-    success = db.Column(db.Boolean, default=True)  # New column for success
+
     timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
 
 
@@ -278,6 +278,7 @@ def add_modelresult():
     db.session.add(new_entry)
     db.session.commit()
     return jsonify({'message': 'ModelResult added successfully'}), 201
+
 
 
 @app.route('/modelresult', methods=['GET'])
