@@ -4,6 +4,9 @@ from flask_migrate import Migrate
 from geopy.geocoders import Nominatim
 from sqlalchemy.orm import class_mapper
 from dotenv import load_dotenv
+from sqlalchemy.exc import IntegrityError
+import logging
+
 
 import os
 
@@ -48,7 +51,7 @@ class ModelResult(db.Model):
     ip_address = db.Column(db.String(255), db.ForeignKey('userdata.ip_address'), nullable=False)
     service_type = db.Column(db.String(100), nullable=False)
     model_name = db.Column(db.String(255), nullable=True)  # New column for the model name
-    model_id = db.Column(db.Integer, nullable=True)
+    server_id = db.Column(db.Integer, nullable=False)
     latency_time = db.Column(db.Float, nullable=False)
     cpu_usage = db.Column(db.Float, nullable=True)  # Optionally track CPU usage
     accuracy = db.Column(db.Float, nullable=True)
@@ -57,28 +60,9 @@ class ModelResult(db.Model):
     throughput = db.Column(db.Float, nullable=True)  # New column for throughput
     energy_required = db.Column(db.Float, nullable=True)  # New column for energy required
     power_watts = db.Column(db.Float, nullable=True)  # New column for power in watts
-
+    message = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.Boolean, nullable=False) 
     timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
-
-
-
-# NEW SERVICE
-# class ServerData(db.Model):
-#     __tablename__ = 'server_data'
-#     public_ip = db.Column(db.String(255), primary_key=True)  # Primary key set as public IP
-#     local_ip = db.Column(db.String(255), nullable=False)
-#     latitude = db.Column(db.Float, nullable=False)
-#     longitude = db.Column(db.Float, nullable=False)
-#     service_provider = db.Column(db.String(255), nullable=False)
-#     city = db.Column(db.String(255), nullable=False)
-#     region = db.Column(db.String(255), nullable=False)
-#     country = db.Column(db.String(255), nullable=False)
-#     geo_location_coordinates = db.Column(db.String(255), nullable=False)
-#     asn = db.Column(db.String(255), nullable=False)
-#     asn_description = db.Column(db.String(255), nullable=False)
-#     subnet = db.Column(db.String(255), nullable=False)
-#     subnet_mask = db.Column(db.String(255), nullable=False)
-#     timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
 
 
 class ServerData(db.Model):
@@ -222,10 +206,6 @@ def download_userdata_csv():
 def add_userdata():
     data = request.json
     ip_address = data.get('ip_address')
-
-    # Skip if the IP is localhost or 127.0.0.1
-    if ip_address in ['127.0.0.1', 'localhost']:
-        return jsonify({'message': 'Skipping localhost IP'}), 200
     
     # Check if user data already exists
     ip_exists = Userdata.query.filter_by(ip_address=ip_address).first()
@@ -275,9 +255,20 @@ def delete_userdata(ip_address):
 def add_modelresult():
     data = request.json
     new_entry = ModelResult(**data)
-    db.session.add(new_entry)
-    db.session.commit()
-    return jsonify({'message': 'ModelResult added successfully'}), 201
+    try:
+        db.session.add(new_entry)
+        db.session.commit()
+    except IntegrityError as e:
+        db.session.rollback()
+        logging.error(str(e))
+        return jsonify({
+            "status": "error",
+            "message": "DB commit failed",
+            "details": str(e)
+        }), 500
+    
+    return jsonify({'status':'ok' , 'message': 'ModelResult added successfully'}), 201
+
 
 
 
