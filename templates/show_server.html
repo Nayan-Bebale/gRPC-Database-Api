@@ -41,12 +41,13 @@
     
     <div class="p-4 m-3 border rounded shadow">
 
-        <h1>IP Address - Server Data</h1>
+        <h1>Server's</h1>
         <div class="table-responsive">
             <table id="example" class="display nowrap table table-hover table-striped table-bordered table-sm"
                 style="width:100%">
                 <thead>
                     <tr>
+                        <th>Server ID</th>
                         <th>IP Address</th>
                         <th>Cpu</th>
                         <th>Gpu</th>
@@ -60,6 +61,7 @@
                 <tbody>
                     {% for item in data %}
                     <tr id="row-{{item.server_id}}">
+                        <td>{{item.server_id}}</td>
                         <td>{{item.ip_address}}</td>
                         <td>{{item.cpu_use}}</td>
                         <td>{{item.gpu_use}}</td>
