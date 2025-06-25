@@ -5,74 +5,73 @@ from geopy.geocoders import Nominatim
 from sqlalchemy.orm import class_mapper
 from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError
+from models import UserData, ModelData, ServerData, db
 import logging
-
-
 import os
-
 load_dotenv()
-
 import csv
+import time
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 app.config['UPLOAD_FOLDER'] = '/tmp'  # Temporary folder to store uploaded images
 
-
-db = SQLAlchemy(app)
-
+db.init_app(app)
 migrate = Migrate(app, db)
+
+# db = SQLAlchemy(app)
+
+# migrate = Migrate(app, db)
 
 geolocator = Nominatim(user_agent=os.getenv("Nominatim_USER"))
 
 
 # Define Userdata table
-class Userdata(db.Model):
-    __tablename__ = 'userdata'
-    ip_address = db.Column(db.String(255), primary_key=True)  # Primary key
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
-    city = db.Column(db.String(100), nullable=True)
-    region = db.Column(db.String(100), nullable=True)
-    country = db.Column(db.String(100), nullable=True)
-    asn = db.Column(db.String(100), nullable=True)
-    asn_description = db.Column(db.String(255), nullable=True)
-    subnet_mask = db.Column(db.String(100), nullable=True)
-    subnet = db.Column(db.String(100), nullable=True)
+# class Userdata(db.Model):
+#     __tablename__ = 'userdata'
+#     ip_address = db.Column(db.String(255), primary_key=True)  # Primary key
+#     latitude = db.Column(db.Float, nullable=False)
+#     longitude = db.Column(db.Float, nullable=False)
+#     city = db.Column(db.String(100), nullable=True)
+#     region = db.Column(db.String(100), nullable=True)
+#     country = db.Column(db.String(100), nullable=True)
+#     asn = db.Column(db.String(100), nullable=True)
+#     asn_description = db.Column(db.String(255), nullable=True)
+#     subnet_mask = db.Column(db.String(100), nullable=True)
+#     subnet = db.Column(db.String(100), nullable=True)
     
 
 # Update ModelResult table
-class ModelResult(db.Model):
-    __tablename__ = 'model_results'
-    id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(255), db.ForeignKey('userdata.ip_address'), nullable=False)
-    service_type = db.Column(db.String(100), nullable=False)
-    model_name = db.Column(db.String(255), nullable=True)  # New column for the model name
-    server_id = db.Column(db.Integer, nullable=False)
-    latency_time = db.Column(db.Float, nullable=False)
-    cpu_usage = db.Column(db.Float, nullable=True)  # Optionally track CPU usage
-    accuracy = db.Column(db.Float, nullable=True)
-    memory_usage = db.Column(db.Float, nullable=True)  # Optionally track memory usage
-    response_time = db.Column(db.Float, nullable=True)  # New column for response time
-    throughput = db.Column(db.Float, nullable=True)  # New column for throughput
-    energy_required = db.Column(db.Float, nullable=True)  # New column for energy required
-    power_watts = db.Column(db.Float, nullable=True)  # New column for power in watts
-    message = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.Boolean, nullable=False) 
-    timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
+# class ModelResult(db.Model):
+#     __tablename__ = 'model_results'
+#     id = db.Column(db.Integer, primary_key=True)
+#     ip_address = db.Column(db.String(255), db.ForeignKey('userdata.ip_address'), nullable=False)
+#     service_type = db.Column(db.String(100), nullable=False)
+#     model_name = db.Column(db.String(255), nullable=True)  # New column for the model name
+#     server_id = db.Column(db.Integer, nullable=False)
+#     latency_time = db.Column(db.Float, nullable=False)
+#     cpu_usage = db.Column(db.Float, nullable=True)  # Optionally track CPU usage
+#     accuracy = db.Column(db.Float, nullable=True)
+#     memory_usage = db.Column(db.Float, nullable=True)  # Optionally track memory usage
+#     response_time = db.Column(db.Float, nullable=True)  # New column for response time
+#     throughput = db.Column(db.Float, nullable=True)  # New column for throughput
+#     energy_required = db.Column(db.Float, nullable=True)  # New column for energy required
+#     power_watts = db.Column(db.Float, nullable=True)  # New column for power in watts
+#     message = db.Column(db.String(255), nullable=False)
+#     status = db.Column(db.Boolean, nullable=False) 
+#     timestamp = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
 
 
-class ServerData(db.Model):
-    server_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    ip_address = db.Column(db.String(255), nullable=False)
-    cpu_use = db.Column(db.String(55), nullable=True)
-    gpu_use = db.Column(db.String(55), nullable=True)
-    ram_use = db.Column(db.Integer, nullable=True)
-    service_provider = db.Column(db.String(255), nullable=False)
-    machine_type = db.Column(db.String(255), nullable=False)
+# class ServerData(db.Model):
+#     server_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     ip_address = db.Column(db.String(255), nullable=False)
+#     cpu_use = db.Column(db.String(55), nullable=True)
+#     gpu_use = db.Column(db.String(55), nullable=True)
+#     ram_use = db.Column(db.Integer, nullable=True)
+#     service_provider = db.Column(db.String(255), nullable=False)
+#     machine_type = db.Column(db.String(255), nullable=False)
 
 
 
@@ -84,7 +83,7 @@ with app.app_context():
 def export_userdata_to_csv():
     try:
         # Query all records from the Userdata table
-        results = Userdata.query.all()
+        results = UserData.query.all()
 
         # Define the column headers for the CSV
         column_headers = [
@@ -134,7 +133,7 @@ def export_userdata_to_csv():
 
 def export_model_results_to_csv():
     # Query all records from the ModelResult table
-    results = ModelResult.query.all()
+    results = ModelData.query.all()
 
     # Define the column headers for the CSV
     column_headers = [
@@ -180,8 +179,8 @@ def model_to_dict(model):
 @app.route('/')
 def show_data():
     # Query the database
-    data = Userdata.query.all()
-    models = ModelResult.query.all()
+    data = UserData.query.all()
+    models = ModelData.query.all()
     return render_template('show_data.html', data=data, models=models)
 
 
@@ -208,13 +207,13 @@ def add_userdata():
     ip_address = data.get('ip_address')
     
     # Check if user data already exists
-    ip_exists = Userdata.query.filter_by(ip_address=ip_address).first()
+    ip_exists = UserData.query.filter_by(ip_address=ip_address).first()
     if ip_exists:
         return jsonify({'message': 'Userdata already exists'}), 200
 
     # Add new user data only if latitude and longitude are not None
     if data.get('latitude') is not None and data.get('longitude') is not None:
-        new_entry = Userdata(**data)
+        new_entry = UserData(**data)
         db.session.add(new_entry)
         db.session.commit()
         return jsonify({'message': 'Userdata added successfully'}), 201
@@ -225,13 +224,13 @@ def add_userdata():
 
 @app.route('/userdata', methods=['GET'])
 def get_userdata():
-    return jsonify([u.__dict__ for u in Userdata.query.all() if '_sa_instance_state' not in u.__dict__])
+    return jsonify([u.__dict__ for u in UserData.query.all() if '_sa_instance_state' not in u.__dict__])
 
 
 @app.route('/userdata/<ip_address>', methods=['PUT'])
 def update_userdata(ip_address):
     data = request.json
-    entry = Userdata.query.get(ip_address)
+    entry = UserData.query.get(ip_address)
     if entry:
         for key, value in data.items():
             setattr(entry, key, value)
@@ -242,7 +241,7 @@ def update_userdata(ip_address):
 
 @app.route('/userdata/<ip_address>', methods=['DELETE'])
 def delete_userdata(ip_address):
-    entry = Userdata.query.get(ip_address)
+    entry = UserData.query.get(ip_address)
     if entry:
         db.session.delete(entry)
         db.session.commit()
@@ -251,10 +250,59 @@ def delete_userdata(ip_address):
 
 
 # CRUD Routes for ModelResult
+# @app.route('/modelresult', methods=['POST'])
+# def add_modelresult():
+#     data = request.json
+#     new_entry = ModelData(**data)
+#     st = time.perf_counter()
+#     try:
+#         db.session.add(new_entry)
+#         db.session.commit()
+#     except IntegrityError as e:
+#         db.session.rollback()
+#         logging.error(str(e))
+#         return jsonify({
+#             "status": "error",
+#             "message": "DB commit failed",
+#             "details": str(e)
+#         }), 500
+    
+#     et = time.perf_counter()
+
+#     print(f" time taken to insert entry: {et-st}")
+#     return jsonify({'status':'ok' , 'message': 'ModelResult added successfully'}), 201
+
+
+
+
+# @app.route('/modelresult', methods=['GET'])
+# def get_modelresult():
+#     return jsonify([m.__dict__ for m in ModelData.query.all() if '_sa_instance_state' not in m.__dict__])
+
+
+# @app.route('/modelresult/<int:id>', methods=['DELETE'])
+# def delete_modelresult(id):
+#     entry = ModelData.query.get(id)
+#     if entry:
+#         db.session.delete(entry)
+#         db.session.commit()
+#         return jsonify({'message': 'ModelResult deleted'})
+#     return jsonify({'error': 'ModelResult not found'}), 404
+
+
 @app.route('/modelresult', methods=['POST'])
 def add_modelresult():
+    start_total = time.perf_counter()
+
+    parse_start = time.perf_counter()
     data = request.json
-    new_entry = ModelResult(**data)
+    parse_end = time.perf_counter()
+
+    obj_create_start = time.perf_counter()
+    new_entry = ModelData(**data)
+    obj_create_end = time.perf_counter()
+
+    db_start = time.perf_counter()
     try:
         db.session.add(new_entry)
         db.session.commit()
@@ -266,25 +314,18 @@ def add_modelresult():
             "message": "DB commit failed",
             "details": str(e)
         }), 500
-    
-    return jsonify({'status':'ok' , 'message': 'ModelResult added successfully'}), 201
+    db_end = time.perf_counter()
+
+    end_total = time.perf_counter()
+
+    print(f"⏱ request.json parsing:      {parse_end - parse_start:.4f} sec")
+    print(f"⏱ object creation:          {obj_create_end - obj_create_start:.4f} sec")
+    print(f"⏱ DB insert:                {db_end - db_start:.4f} sec")
+    print(f"⏱ Total route time:         {end_total - start_total:.4f} sec")
+
+    return jsonify({'status': 'ok', 'message': 'ModelResult added successfully'}), 201
 
 
-
-
-@app.route('/modelresult', methods=['GET'])
-def get_modelresult():
-    return jsonify([m.__dict__ for m in ModelResult.query.all() if '_sa_instance_state' not in m.__dict__])
-
-
-@app.route('/modelresult/<int:id>', methods=['DELETE'])
-def delete_modelresult(id):
-    entry = ModelResult.query.get(id)
-    if entry:
-        db.session.delete(entry)
-        db.session.commit()
-        return jsonify({'message': 'ModelResult deleted'})
-    return jsonify({'error': 'ModelResult not found'}), 404
 
 
 # Route to handle form submission
@@ -318,4 +359,4 @@ def delete_serverdata(server_id):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=os.getenv("PORT"), debug=True)
+    app.run(host='0.0.0.0', port=os.getenv("PORT"), debug=False)
